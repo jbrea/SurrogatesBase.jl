@@ -9,50 +9,36 @@ export update_hyperparameters!, hyperparameters
 export mean, var, mean_and_var, rand
 
 """
-    abstract type AbstractSurrogate{D, R} end
+    abstract type AbstractSurrogate end
 
-An abstract type for surrogates, parametrized by domain type `D` and
-range type `R` of the underlying function that is being approximated.
+An abstract type for surrogate functions.
 
-    (s::AbstractSurrogate{D})(x::D) where D
+    (s::AbstractSurrogate)(x)
 
-Subtypes of `AbstractSurrogate` can be callable with input points `x` such that the result
-is an evaluation of the surrogate at `x`, corresponding to an approximation of the underlying
-function at `x`.
+Subtypes of `AbstractSurrogate` are callable with input points `x` such that the result
+is an evaluation of the surrogate at `x`.
 
 # Examples
 ```jldoctest
-julia> struct ZeroSurrogate{D, R} <: AbstractSurrogate{D, R} end
+julia> struct ZeroSurrogate <: AbstractSurrogate end
 
-julia> (::ZeroSurrogate{D})(x::D) where D = 0
+julia> (::ZeroSurrogate)(x) = 0
 
-julia> s = ZeroSurrogate{Int, Int}()
-ZeroSurrogate{Int64, Int64}()
+julia> s = ZeroSurrogate()
+ZeroSurrogate()
 
 julia> s(4) == 0
 true
 ```
 """
-abstract type AbstractSurrogate{D, R} <: Function end
+abstract type AbstractSurrogate <: Function end
 
 """
-    add_point!(s::AbstractSurrogate{D, R}, new_x::D, new_y::R) where {D, R}
-
-Add an evaluation `new_y` at point `new_x` to the surrogate.
-"""
-function add_point! end
-"""
-    add_point!(s::AbstractSurrogate{D, R}, new_xs::AbstractVector{D}, new_ys::AbstractVector{R}) where {D, R}
+    add_point!(s::AbstractSurrogate, new_xs::AbstractVector, new_ys::AbstractVector)
 
 Add evaluations `new_ys` at points `new_xs` to the surrogate.
-
-Use `add_point!(s, eachslice(X, dims = 2), new_ys)` if `X` is a matrix.
 """
-function add_point!(s::AbstractSurrogate{D, R},
-    new_xs::AbstractVector{D},
-    new_ys::AbstractVector{R}) where {D, R}
-    add_point!.(Ref(s), new_xs, new_ys)
-end
+function add_point! end
 
 """
     update_hyperparameters!(s::AbstractSurrogate, prior)
@@ -74,68 +60,33 @@ See also [`update_hyperparameters!`](@ref).
 function hyperparameters end
 
 """
-    mean(s::AbstractSurrogate{D}, x::D) where D
+    mean(s::AbstractSurrogate, xs::AbstractVector)
 
-Return mean at point `x`.
+Return mean at points `xs`.
 """
-function mean end
-"""
-    mean(s::AbstractSurrogate{D}, xs::AbstractVector{D}) where D
-
-Return a vector of means at points `xs`.
-
-Use `mean(s, eachslice(X, dims = 2))` if `X` is a matrix.
-"""
-function mean(s::AbstractSurrogate{D}, xs::AbstractVector{D}) where {D}
-    mean.(Ref(s), xs)
-end
+mean(::AbstractSurrogate, ::AbstractVector)
 
 """
-    var(s::AbstractSurrogate{D}, x::D) where D
+    var(s::AbstractSurrogate, xs::AbstractVector)
 
-Return variance at point `x`.
+Return variance at points `xs`.
 """
-function var end
-
-"""
-    var(s::AbstractSurrogate{D}, xs::AbstractVector{D}) where D
-
-Return a vector of variances at points `xs`.
-"""
-function var(s::AbstractSurrogate{D}, xs::AbstractVector{D}) where {D}
-    var.(Ref(s), xs)
-end
+var(::AbstractSurrogate, ::AbstractVector)
 
 """
-    mean_and_var(s::AbstractSurrogate{D}, x::D) where D
+    mean_and_var(s::AbstractSurrogate, xs)
 
-Return a Tuple of mean and variance at point `x`.
+Return a Tuple of means and variances at points `xs`.
 """
-function mean_and_var(s::AbstractSurrogate{D}, x::D) where {D}
-    mean(s, x), var(s, x)
-end
-
-"""
-    mean_and_var(s::AbstractSurrogate{D}, xs::AbstractVector{D}) where D
-
-Return a Tuple of vector of means and vector of variances at points `xs`.
-"""
-function mean_and_var(s::AbstractSurrogate{D}, xs::AbstractVector{D}) where {D}
+function mean_and_var(s::AbstractSurrogate, xs::AbstractVector)
     mean(s, xs), var(s, xs)
 end
 
 """
-    rand(s::AbstractSurrogate{D}, xs::AbstractVector{D}) where D
+    rand(s::AbstractSurrogate, xs::AbstractVector)
 
 Return a sample from the joint posterior at points `xs`.
 """
-function rand end
-
-"""
-    rand(s::AbstractSurrogate{D}, x::D) where D
-
-Return a sample from the posterior distribution at a point `x`.
-"""
-rand(s::AbstractSurrogate{D}, x::D) where {D} = only(rand(s::AbstractSurrogate, [x]))
+rand(::AbstractSurrogate, ::AbstractVector)
 
 end
