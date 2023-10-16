@@ -4,7 +4,7 @@ import Statistics: mean, var
 import Base: rand
 import StatsBase: mean_and_var
 
-export AbstractSurrogate, add_point!
+export AbstractSurrogate, add_points!
 export update_hyperparameters!, hyperparameters
 export mean, var, mean_and_var, rand
 
@@ -34,11 +34,11 @@ true
 abstract type AbstractSurrogate <: Function end
 
 """
-    add_point!(s::AbstractSurrogate, new_xs::AbstractVector, new_ys::AbstractVector)
+    add_points!(s::AbstractSurrogate, new_xs::AbstractVector, new_ys::AbstractVector)
 
 Add evaluations `new_ys` at points `new_xs` to the surrogate.
 """
-function add_point! end
+function add_points! end
 
 """
     update_hyperparameters!(s::AbstractSurrogate, prior)
